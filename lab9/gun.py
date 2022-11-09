@@ -20,6 +20,19 @@ GAME_COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 WIDTH = 800
 HEIGHT = 600
 
+class Points:
+    def __init__(self):
+        self.points = 0
+        self.font = pygame.font.SysFont(None, 24)
+
+    def increase(self):
+        self.points += 1
+
+    def draw(self):
+        img = self.font.render('Points: ' + str(self.points), True, (0, 0, 0))
+        screen.blit(img, (20, 20))
+
+
 class Ball:
     def __init__(self, screen: pygame.Surface, x=40, y=450):
         """ Конструктор класса ball
@@ -35,7 +48,7 @@ class Ball:
         self.vx = 0
         self.vy = 0
         self.color = choice(GAME_COLORS)
-        self.live = 30
+        self.live = 4*FPS
 
     def move(self):
         """Переместить мяч по прошествии единицы времени.
@@ -52,6 +65,9 @@ class Ball:
         self.vy += 1
         self.x += self.vx
         self.y += self.vy
+        self.live -= 1
+        if self.live < 0:
+            balls.pop(balls.index(self))
 
     def draw(self):
         pygame.draw.circle(
@@ -113,7 +129,13 @@ class Gun:
             self.color = GREY
 
     def draw(self):
-        pygame.draw.rect(self.screen, self.color, ((10, 440), (20, 20)))
+        # pygame.draw.rect(self.screen, self.color, ((10, 440), (20, 20)))
+        pygame.draw.line(self.screen,
+                         self.color,
+                         (20,450),
+                         (20 + self.f2_power * math.cos(self.an), 450 + self.f2_power * math.sin(self.an)),
+                         15
+                         )
         # FIXME don't know how to do it
 
     def power_up(self):
@@ -138,9 +160,9 @@ class Target:
 
     def new_target(self):
         """ Инициализация новой цели. """
-        x = self.x = randint(600, 780)
+        x = self.x = randint(200, 780)
         y = self.y = randint(300, 550)
-        r = self.r = randint(2, 50)
+        r = self.r = randint(8, 50)
         live = self.live = 1
         color = self.color = RED
 
@@ -165,13 +187,17 @@ balls = []
 
 clock = pygame.time.Clock()
 gun = Gun(screen)
-target = Target()
+target_1 = Target()
+target_2 = Target()
 finished = False
+point = Points()
 
 while not finished:
     screen.fill(WHITE)
     gun.draw()
-    target.draw()
+    target_1.draw()
+    target_2.draw()
+    point.draw()
     for b in balls:
         b.draw()
     pygame.display.update()
@@ -189,10 +215,17 @@ while not finished:
 
     for b in balls:
         b.move()
-        if b.hittest(target) and target.live:
-            target.live = 0
-            target.hit()
-            target.new_target()
+        if b.hittest(target_1) and target_1.live:
+            target_1.live = 0
+            target_1.new_target()
+            point.increase()
+        if b.hittest(target_2) and target_2.live:
+            target_2.live = 0
+            target_2.new_target()
+            point.increase()
+
     gun.power_up()
 
 pygame.quit()
+
+'''hi'''
