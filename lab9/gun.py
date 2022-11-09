@@ -88,6 +88,7 @@ class Ball:
         if (self.x - obj.x) ** 2 + (self.y - obj.y) ** 2 > (self.r + obj.r) ** 2:
             return False
         else:
+            self.live = -1
             return True
 
 
@@ -165,6 +166,8 @@ class Target:
         r = self.r = randint(8, 50)
         live = self.live = 1
         color = self.color = RED
+        self.vx = randint(-5, 5)
+        self.vy = randint(-5, 5)
 
     def hit(self, points=1):
         """Попадание шарика в цель."""
@@ -177,7 +180,13 @@ class Target:
             (self.x, self.y),
             self.r
         )
-
+    def move(self):
+        if self.x + self.r > WIDTH or self.x - self.r < 0:
+            self.vx = -self.vx
+        if self.y + self.r > HEIGHT or self.y - self.r < 0:
+            self.vy = - self.vy
+        self.x += self.vx
+        self.y += self.vy
 
 
 pygame.init()
@@ -224,8 +233,9 @@ while not finished:
             target_2.new_target()
             point.increase()
 
+    target_1.move()
+    target_2.move()
+
     gun.power_up()
 
 pygame.quit()
-
-'''hi'''
